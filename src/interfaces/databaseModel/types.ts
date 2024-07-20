@@ -4,9 +4,17 @@ export enum PostgresTypes  {
     BOOL = 'bool'
 }
 
-export type fieldsConfig = Record<string, {
-    primaryKey?: boolean,
-    type: PostgresTypes,
-    allowNull: boolean,
-    autoincrement?: boolean,
-}>;
+export type FieldsConfig<T> = {
+    [K in keyof T]: {
+        primaryKey?: boolean
+        type: PostgresTypes
+        allowNull: boolean
+        autoincrement?: boolean
+    }
+};
+
+export type ModelInstance<CreationAttributes, Attributes> = {
+    CreationsAttributes: CreationAttributes
+    Attributes: Attributes
+}
+
