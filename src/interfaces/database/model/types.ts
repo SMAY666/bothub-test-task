@@ -12,9 +12,3 @@ export type FieldsConfig<T> = {
         autoincrement?: boolean
     }
 };
-
-export type ModelInstance<CreationAttributes, Attributes> = {
-    CreationsAttributes: CreationAttributes
-    Attributes: Attributes
-}
-

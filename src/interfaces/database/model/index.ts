@@ -1,11 +1,12 @@
-import {pgConnection} from '../../connections/postgresConnection';
-import {FieldsConfig, ModelInstance} from './types';
-import {sqlKeywords} from '../../constants/sqlKeywords';
+import {pgConnection} from '../../../connections/postgresConnection';
+import {FieldsConfig} from './types';
+import {sqlKeywords} from '../../../constants/sqlKeywords';
 import {Row} from 'postgresql-client';
+import {ModelInstance} from '../entity';
 
 
 export class Model<T extends ModelInstance<any, any>> {
-    constructor(fields: FieldsConfig<T['Attributes']>, name: string) {
+    constructor(fields: FieldsConfig<T['attributes']>, name: string) {
         this.fields = fields;
         this.name = name;
     }
@@ -14,8 +15,7 @@ export class Model<T extends ModelInstance<any, any>> {
     // ----- [ PRIVATE MEMBERS ] ---------------------------------------------------------------------------------------
 
     private readonly name: string;
-    private readonly fields: FieldsConfig<T['Attributes']>;
-
+    private readonly fields: FieldsConfig<T['attributes']>;
 
     // ----- [ PRIVATE METHODS ] ---------------------------------------------------------------------------------------
 
@@ -23,32 +23,14 @@ export class Model<T extends ModelInstance<any, any>> {
         return '*';
     }
 
-    private formatReturningFields<T extends object>(attributes: T, rows: Row[] | undefined): T | T[] | {} {
-        if (!rows || rows.length === 0) {
-            return {};
-        }
-
-        // @ts-ignore
-        const result = [];
-
-        for (const row of rows) {
-            const entity = {};
-            // @ts-ignore
-            row.forEach((value, index) => {
-                // @ts-ignore
-                entity[Object.keys(attributes)[index]] = value;
-            });
-            result.push(entity);
-        }
-
-        // @ts-ignore
-        return result;
+    private createInstance(creationAttributes: T['creationAttributes'], attributes: T['attributes']): T {
+        const instance: ModelInstance<T['creationAttributes'], T['attributes']>;
     }
 
 
     // ----- [ PUBLIC METHODS ] ----------------------------------------------------------------------------------------
 
-    async createTable() {
+    public async createTable() {
         try {
             let defineFieldsText = '';
 
@@ -69,7 +51,7 @@ export class Model<T extends ModelInstance<any, any>> {
         }
     }
 
-    create(data: T['CreationsAttributes'])  {
+    public create(data: T['creationAttributes'])  {
         return new Promise(async (resolve, reject) => {
             try {
                 let queryString = `insert into public.${this.name} (`;
@@ -81,10 +63,10 @@ export class Model<T extends ModelInstance<any, any>> {
                 queryString += `returning ${this.returningFields()};`;
 
                 const queryResult = await pgConnection.query(queryString);
-                const result = this.formatReturningFields<FieldsConfig<T['Attributes']>>(this.fields, queryResult.rows);
+                const result = this.formatFields<FieldsConfig<T['attributes']>>(this.fields, queryResult.rows);
 
                 if (Array.isArray(result)) {
-                    resolve(result[0]);
+                    resolve(result[0].attributes);
                 }
                 resolve(result);
             } catch (err) {
@@ -92,4 +74,21 @@ export class Model<T extends ModelInstance<any, any>> {
             }
         });
     }
+
+    public async delete(id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const queryString = `delete from public.${this.name} where id=${id}`;
+                await pgConnection.query(queryString);
+                resolve();
+            } catch (err) {
+                reject(Error(JSON.stringify(err)));
+            }
+        });
+    }
 }
+
+/*let entity: {
+    creationAttributes: T['creationAttributes']
+    attributes?: T['attributes']
+} = {creationAttributes: {}, attributes: {}};*/
