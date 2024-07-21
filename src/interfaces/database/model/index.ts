@@ -24,7 +24,7 @@ export class Model<T extends Entity<any, any>> {
     }
 
     private createInstance(creationAttributes: T['creationAttributes'], attributes: T['attributes']): ModelInstance<T> {
-        const instance = new Entity<T["creationAttributes"], T["attributes"]>(creationAttributes, attributes);
+        const instance = new Entity<T["creationAttributes"], T["attributes"]>(creationAttributes, attributes, this.name);
         instance.creationAttributes = creationAttributes;
         instance.attributes = attributes;
 
@@ -94,16 +94,6 @@ export class Model<T extends Entity<any, any>> {
             return result;
         } catch (err) {
             throw new Error(JSON.stringify(err))
-        }
-    }
-
-    public async delete(id: number) {
-        try {
-            const queryString = `delete from public.${this.name} where id=${id}`;
-            await pgConnection.query(queryString);
-            return;
-        } catch (err) {
-            throw new Error(JSON.stringify(err));
         }
     }
 }
