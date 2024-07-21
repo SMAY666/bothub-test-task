@@ -1,11 +1,11 @@
 import {pgConnection} from '../../../connections/postgresConnection';
-import {FieldsConfig} from './types';
+import {FieldsConfig, ModelInstance} from './types';
 import {sqlKeywords} from '../../../constants/sqlKeywords';
 import {Row} from 'postgresql-client';
-import {ModelInstance} from '../entity';
+import {Entity} from '../entity';
 
 
-export class Model<T extends ModelInstance<any, any>> {
+export class Model<T extends Entity<any, any>> {
     constructor(fields: FieldsConfig<T['attributes']>, name: string) {
         this.fields = fields;
         this.name = name;
@@ -23,8 +23,32 @@ export class Model<T extends ModelInstance<any, any>> {
         return '*';
     }
 
-    private createInstance(creationAttributes: T['creationAttributes'], attributes: T['attributes']): T {
-        const instance: ModelInstance<T['creationAttributes'], T['attributes']>;
+    private createInstance(creationAttributes: T['creationAttributes'], attributes: T['attributes']): ModelInstance<T> {
+        const instance = new Entity<T["creationAttributes"], T["attributes"]>(creationAttributes, attributes);
+        instance.creationAttributes = creationAttributes;
+        instance.attributes = attributes;
+
+        return instance;
+    }
+
+    private parseResponse(attributes: T['attributes'], response: Row[]): ModelInstance<T>[] {
+        const result: ModelInstance<T>[] = [];
+        const creationAttributes: T['creationAttributes'] = {}
+
+        for (const row of response) {
+            // @ts-ignore
+            row.forEach((value) => {
+                Object.keys(attributes).forEach((key) => {
+                    if ((key as keyof T['creationAttributes']) in attributes) {
+                        creationAttributes[key] = value;
+                    }
+                })
+            });
+        }
+
+        const instance = this.createInstance(creationAttributes, attributes);
+        result.push(instance);
+        return result;
     }
 
 
@@ -47,48 +71,42 @@ export class Model<T extends ModelInstance<any, any>> {
                 )
             `);
         } catch (err) {
-           throw new Error(JSON.stringify(err));
+            throw new Error(JSON.stringify(err));
         }
     }
 
-    public create(data: T['creationAttributes'])  {
-        return new Promise(async (resolve, reject) => {
-            try {
-                let queryString = `insert into public.${this.name} (`;
-                const formatKeys = Object.keys(data).map((key) => sqlKeywords.includes(key) ? `"${key}"` : key);
-                queryString += formatKeys.join(', ') + ')\n';
+    public async create(data: T['creationAttributes']) {
+        try {
+            let queryString = `insert into public.${this.name} (`;
+            const formatKeys = Object.keys(data).map((key) => sqlKeywords.includes(key) ? `"${key}"` : key);
+            queryString += formatKeys.join(', ') + ')\n';
 
-                const values = Object.keys(data).map((key) => `'${data[key]}'`);
-                queryString += 'values (' + values.join(', ') + ')';
-                queryString += `returning ${this.returningFields()};`;
+            const values = Object.keys(data).map((key) => `'${data[key]}'`);
+            queryString += 'values (' + values.join(', ') + ')\n';
+            queryString += `returning ${this.returningFields()};`;
 
-                const queryResult = await pgConnection.query(queryString);
-                const result = this.formatFields<FieldsConfig<T['attributes']>>(this.fields, queryResult.rows);
-
-                if (Array.isArray(result)) {
-                    resolve(result[0].attributes);
-                }
-                resolve(result);
-            } catch (err) {
-                reject(Error(JSON.stringify(err)))
+            const queryResult = await pgConnection.query(queryString);
+            if (!queryResult.rows) {
+                throw new Error('Что-то пошло не так');
             }
-        });
+            const result = this.parseResponse(this.fields, queryResult.rows);
+
+            if (Array.isArray(result)) {
+                return result[0];
+            }
+            return result;
+        } catch (err) {
+            throw new Error(JSON.stringify(err))
+        }
     }
 
-    public async delete(id) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const queryString = `delete from public.${this.name} where id=${id}`;
-                await pgConnection.query(queryString);
-                resolve();
-            } catch (err) {
-                reject(Error(JSON.stringify(err)));
-            }
-        });
+    public async delete(id: number) {
+        try {
+            const queryString = `delete from public.${this.name} where id=${id}`;
+            await pgConnection.query(queryString);
+            return;
+        } catch (err) {
+            throw new Error(JSON.stringify(err));
+        }
     }
 }
-
-/*let entity: {
-    creationAttributes: T['creationAttributes']
-    attributes?: T['attributes']
-} = {creationAttributes: {}, attributes: {}};*/

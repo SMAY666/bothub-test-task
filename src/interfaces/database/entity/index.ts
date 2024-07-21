@@ -1,8 +1,15 @@
-export abstract class ModelInstance<Attributes, CreationAttributes> {
-    public attributes: Attributes
+export class Entity<CreationAttributes, Attributes> {
+    constructor(
+        creationAttributes: CreationAttributes,
+        attributes: Attributes,
+    ) {
+        this.creationAttributes = creationAttributes;
+        this.attributes = attributes;
+    }
     public creationAttributes: CreationAttributes
+    public attributes: Attributes
 
-    public drop(id: number) {
+    public drop() {
 
     }
 }

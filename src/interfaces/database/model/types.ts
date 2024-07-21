@@ -1,3 +1,5 @@
+import {Entity} from '../entity';
+
 export enum PostgresTypes  {
     INT8 = 'int8',
     STRING = 'varchar(255)',
@@ -12,3 +14,9 @@ export type FieldsConfig<T> = {
         autoincrement?: boolean
     }
 };
+
+
+export type ModelInstance<T extends {
+    creationAttributes: object,
+    attributes: object
+}> = Entity<T['creationAttributes'], T['attributes']>;
