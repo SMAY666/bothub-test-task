@@ -11,6 +11,7 @@
     "allowUnreachableCode": true,
     "allowUnusedLabels": true,
     "noUnusedLocals": false,
+    "noImplicitAny": false,
     "noUnusedParameters": false,
     "rootDir": "./src",
     "declaration": false,

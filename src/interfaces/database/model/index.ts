@@ -33,16 +33,13 @@ export class Model<T extends Entity<any, any>> {
 
     private parseResponse(attributes: T['attributes'], response: Row[]): ModelInstance<T>[] {
         const result: ModelInstance<T>[] = [];
-        const creationAttributes: T['creationAttributes'] = {}
+        const creationAttributes: T['creationAttributes'] = {};
 
         for (const row of response) {
-            // @ts-ignore
-            row.forEach((value) => {
-                Object.keys(attributes).forEach((key) => {
-                    if ((key as keyof T['creationAttributes']) in attributes) {
-                        creationAttributes[key] = value;
-                    }
-                })
+            Object.keys(attributes).forEach((key, index) => {
+                if ((key as keyof T['creationAttributes']) in attributes) {
+                    creationAttributes[key] = row[index];
+                }
             });
         }
 
