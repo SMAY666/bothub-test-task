@@ -15,8 +15,17 @@ export type FieldsConfig<T> = {
     }
 };
 
-
 export type ModelInstance<T extends {
     creationAttributes: object,
     attributes: object
 }> = Entity<T['creationAttributes'], T['attributes']>;
+
+
+export type WhereOption<T> = {
+    [K in keyof T]: T[K] | null
+}
+
+export type GetAllOptions<T> = {
+    where?: WhereOption<T> | WhereOption<T>[],
+    attributes?: string[];
+}

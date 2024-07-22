@@ -1,7 +1,7 @@
 import {pgConnection} from '../../../connections/postgresConnection';
-import {FieldsConfig, ModelInstance} from './types';
+import {FieldsConfig, GetAllOptions, WhereOption} from './types';
 import {sqlKeywords} from '../../../constants/sqlKeywords';
-import {Row} from 'postgresql-client';
+import {QueryResult} from 'postgresql-client';
 import {Entity} from '../entity';
 
 
@@ -19,32 +19,32 @@ export class Model<T extends Entity<any, any>> {
 
     // ----- [ PRIVATE METHODS ] ---------------------------------------------------------------------------------------
 
-    private returningFields() {
+    private returningFields(): string {
         return '*';
     }
 
-    private createInstance(creationAttributes: T['creationAttributes'], attributes: T['attributes']): ModelInstance<T> {
-        const instance = new Entity<T["creationAttributes"], T["attributes"]>(creationAttributes, attributes, this.name);
-        instance.creationAttributes = creationAttributes;
+    private createInstance(attributes: T['attributes']): T {
+        const instance = new Entity<T["creationAttributes"], T["attributes"]>(attributes, this.name);
         instance.attributes = attributes;
 
-        return instance;
+        return instance as T;
     }
 
-    private parseResponse(attributes: T['attributes'], response: Row[]): ModelInstance<T>[] {
-        const result: ModelInstance<T>[] = [];
-        const creationAttributes: T['creationAttributes'] = {};
+    private parseResponse(fields: T['attributes'], response: QueryResult): T[] {
+        const result: T[] = [];
+        if (!response || !response.rows) {
+            throw new Error('Response parsing failed');
+        }
+        for (const row of response.rows) {
+            const attributes: T['attributes'] = {};
 
-        for (const row of response) {
-            Object.keys(attributes).forEach((key, index) => {
-                if ((key as keyof T['creationAttributes']) in attributes) {
-                    creationAttributes[key] = row[index];
-                }
+            Object.keys(fields).forEach((key, index) => {
+                attributes[key] = row[index];
             });
+            const instance = this.createInstance(attributes);
+            result.push(instance);
         }
 
-        const instance = this.createInstance(creationAttributes, attributes);
-        result.push(instance);
         return result;
     }
 
@@ -72,7 +72,7 @@ export class Model<T extends Entity<any, any>> {
         }
     }
 
-    public async create(data: T['creationAttributes']) {
+    public async create(data: T['creationAttributes']): Promise<T> {
         try {
             let queryString = `insert into public.${this.name} (`;
             const formatKeys = Object.keys(data).map((key) => sqlKeywords.includes(key) ? `"${key}"` : key);
@@ -86,14 +86,102 @@ export class Model<T extends Entity<any, any>> {
             if (!queryResult.rows) {
                 throw new Error('Что-то пошло не так');
             }
-            const result = this.parseResponse(this.fields, queryResult.rows);
+            const result = this.parseResponse(this.fields, queryResult);
 
             if (Array.isArray(result)) {
                 return result[0];
             }
             return result;
         } catch (err) {
-            throw new Error(JSON.stringify(err))
+            throw new Error(JSON.stringify(err));
+        }
+    }
+
+    public async get(options: GetAllOptions<T['whereAttributes']>): Promise<T | undefined> {
+        const result = await this.getAll(options);
+        if (result.length === 0) {
+            return undefined
+        }
+
+        return result[0];
+    }
+
+    public async getById(id: number): Promise<T | undefined> {
+        const queryString = `select * from public.${this.name} where id=${id}`;
+
+        const queryResponse = await pgConnection.query(queryString);
+
+        if (!queryResponse.rows || queryResponse.rows.length === 0) {
+            return undefined;
+        }
+
+        return this.parseResponse(this.fields, queryResponse)[0];
+    }
+
+    public async getAll(options?: GetAllOptions<T['whereAttributes']>): Promise<T[]> {
+        try {
+            if (!options) {
+                const queryResult = await pgConnection.query(`select * from public.${this.name}`);
+
+                if (!queryResult.rows) {
+                    throw new Error('Что-то пошло не так');
+                }
+                return this.parseResponse(this.fields, queryResult);
+            }
+            const where = options.where;
+            const whereElements: string[] = [];
+
+            const attributes: string[] | undefined = options.attributes;
+            const formatAttributes = attributes && attributes.length > 0 ? attributes.map((attribute) => {
+                return sqlKeywords.includes(attribute) ? `"${attribute}"` : attribute;
+            }) : undefined;
+
+            let queryString = `select ${formatAttributes ? formatAttributes.join(', ') : '*'} from public.${this.name}`;
+
+            if (where && !Array.isArray(where)) {
+                Object.keys(where).forEach((key) => {
+                    let finalString = sqlKeywords.includes(key) ? `"${key}"` : key;
+                    if (where[key] === null) {
+                        finalString += ' is null';
+                    } else if (typeof where[key] === 'string') {
+                        finalString += `='${where[key]}'`;
+                    } else {
+                        finalString += `=${where[key]}`;
+                    }
+                    whereElements.push(finalString);
+                });
+                queryString += ` where ${whereElements.join(' and ')}`;
+            } else if (where && Array.isArray(where)) {
+                const whereElements = [];
+                // @ts-ignore
+                where.forEach((condition) => {
+                    // @ts-ignore
+                    whereElements.push(Object.keys(condition)
+                        .map((key) => {
+                            let finalString = sqlKeywords.includes(key) ? `"${key}"` : key;
+                            if (condition[key] === null) {
+                                finalString += ' is null';
+                            } else if (typeof condition[key] === 'string') {
+                                finalString += `='${condition[key]}'`;
+                            } else {
+                                finalString += `=${condition[key]}`;
+                            }
+                            return finalString;
+                        })
+                        .join(' and '));
+                });
+                queryString += ` where ${whereElements.join(' or ')}`;
+            }
+
+            const queryResult = await pgConnection.query(queryString);
+
+            if (!queryResult.rows) {
+                throw new Error('Что-то пошло не так');
+            }
+
+            return this.parseResponse(this.fields, queryResult);
+        } catch (err) {
+            throw new Error(JSON.stringify(err));
         }
     }
 }

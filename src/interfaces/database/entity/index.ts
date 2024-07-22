@@ -2,23 +2,24 @@ import {pgConnection} from '../../../connections/postgresConnection';
 
 export class Entity<CreationAttributes extends object, Attributes extends object> {
     constructor(
-        creationAttributes: CreationAttributes,
         attributes: Attributes,
         tableName: string
     ) {
-        this.creationAttributes = creationAttributes;
         this.attributes = attributes;
+        this.whereAttributes = attributes;
         this.tableName = tableName;
 
-        Object.keys(this.creationAttributes).forEach((key) => (this as any)[key] = this.creationAttributes[key]);
+
+        Object.keys(this.attributes).forEach((key) => (this as any)[key] = this.attributes[key]);
     }
-    public creationAttributes: CreationAttributes;
+
     public attributes: Attributes;
+    public whereAttributes: Partial<Attributes>
     public tableName: string;
 
     [key: string]: any;
 
-    public async destroy() {
+    public async destroy(): Promise<void> {
         try {
             const queryString = `delete from public.${this.tableName} where id=${this.id}`;
             await pgConnection.query(queryString);
