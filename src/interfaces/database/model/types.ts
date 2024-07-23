@@ -3,7 +3,8 @@ import {Entity} from '../entity';
 export enum PostgresTypes  {
     INT8 = 'int8',
     STRING = 'varchar(255)',
-    BOOL = 'bool'
+    BOOL = 'bool',
+    TIMESTAMP = 'timestamp',
 }
 
 export type FieldsConfig<T> = {

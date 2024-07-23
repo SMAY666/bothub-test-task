@@ -29,7 +29,7 @@ export class Entity<CreationAttributes extends object, Attributes extends object
         }
     }
 
-    public async update(data: Partial<CreationAttributes>): Promise<this> {
+    public async update(data: Partial<Omit<Attributes, 'id'>>): Promise<this> {
         try {
             const updatingFields: string[] = Object.keys(data).map((key) => {
                 let field: string;

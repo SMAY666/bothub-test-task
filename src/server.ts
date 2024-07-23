@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import {ENV} from './constants/env';
 import {usersRoutes} from './routes/usersRoutes';
+import {bookRoutes} from './routes/bookRoutes';
 
 
 export const server = Fastify({
@@ -8,6 +9,7 @@ export const server = Fastify({
 });
 
 void server.register(usersRoutes, {prefix: '/users'});
+void server.register(bookRoutes, {prefix: '/books'});
 
 export async function startServer() {
     return new Promise((resolve, reject) => {
