@@ -1,5 +1,5 @@
 import {FastifyPluginCallback} from 'fastify';
-import {CreateRequest, GetAllRequest, GetByIdRequest} from './types';
+import {CreateRequest, GetAllRequest, GetByIdRequest, UpdateRequest} from './types';
 import {controller} from './controller';
 
 
@@ -18,6 +18,11 @@ export const bookRoutes: FastifyPluginCallback = (instance, opts, done) => {
         '/',
         {},
         controller.create,
+    )
+    instance.put<UpdateRequest>(
+        '/:id',
+        {},
+        controller.update,
     )
     done();
 }

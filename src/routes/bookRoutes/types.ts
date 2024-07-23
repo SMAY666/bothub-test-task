@@ -1,4 +1,4 @@
-import {BookAttributes, BookCreationAttributes} from '../../modules/books/model/type';
+import {BookAttributes, BookCreationAttributes, BookUpdateAttributes} from '../../modules/books/model/type';
 
 
 export type GetAllRequest = {
@@ -15,6 +15,16 @@ export type GetByIdRequest = {
 export type CreateRequest = {
     Body: Omit<BookCreationAttributes, 'genres'> & {
         genres: string[],
+    }
+    Reply: BookAttributes
+}
+
+export type UpdateRequest = {
+    Params: {
+        id: number,
+    }
+    Body: Omit<BookUpdateAttributes, 'genres'> & {
+        genres?: string[],
     }
     Reply: BookAttributes
 }

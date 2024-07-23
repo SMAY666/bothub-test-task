@@ -3,7 +3,7 @@ import {bookRepository} from '../../modules/books/repository';
 import {
     CreateRequest,
     GetAllRequest,
-    GetByIdRequest
+    GetByIdRequest, UpdateRequest
 } from './types';
 import {BookCreationAttributes} from '../../modules/books/model/type';
 
@@ -31,6 +31,18 @@ class Controller {
         reply
             .status(201)
             .send(book._dataValues);
+    }
+
+    public update: RouteHandler<UpdateRequest> = async (req, reply) => {
+        const genres = (await bookRepository.getById(req.params.id))._dataValues.genres;
+        const updatedBook = await bookRepository.update(req.params.id, {
+            ...req.body,
+            genres: req.body.genres ? JSON.stringify(req.body.genres) : genres
+        });
+
+        reply
+            .status(201)
+            .send(updatedBook._dataValues);
     }
 }
 
