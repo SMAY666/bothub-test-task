@@ -6,7 +6,7 @@ import {Entity} from '../entity';
 
 
 export class Model<T extends Entity<any, any>> {
-    constructor(fields: FieldsConfig<T['dataValues']>, name: string) {
+    constructor(fields: FieldsConfig<T['_dataValues']>, name: string) {
         this.fields = fields;
         this.name = name;
     }
@@ -15,7 +15,7 @@ export class Model<T extends Entity<any, any>> {
     // ----- [ PRIVATE MEMBERS ] ---------------------------------------------------------------------------------------
 
     private readonly name: string;
-    private readonly fields: FieldsConfig<T['dataValues']>;
+    private readonly fields: FieldsConfig<T['_dataValues']>;
 
     // ----- [ PRIVATE METHODS ] ---------------------------------------------------------------------------------------
 
@@ -42,20 +42,20 @@ export class Model<T extends Entity<any, any>> {
         return whereElements;
     }
 
-    private createInstance(attributes: T['dataValues']): T {
-        const instance = new Entity<T["creationAttributes"], T["dataValues"]>(attributes, this.name);
-        instance.dataValues = attributes;
+    private createInstance(attributes: T['_dataValues']): T {
+        const instance = new Entity<T["creationAttributes"], T["_dataValues"]>(attributes, this.name);
+        instance._dataValues = attributes;
 
         return instance as T;
     }
 
-    private parseResponse(fields: T['dataValues'], response: QueryResult): T[] {
+    private parseResponse(fields: T['_dataValues'], response: QueryResult): T[] {
         const result: T[] = [];
         if (!response || !response.rows) {
             throw new Error('Response parsing failed');
         }
         for (const row of response.rows) {
-            const attributes: T['dataValues'] = {};
+            const attributes: T['_dataValues'] = {};
 
             Object.keys(fields).forEach((key, index) => {
                 attributes[key] = row[index];
@@ -116,7 +116,7 @@ export class Model<T extends Entity<any, any>> {
         }
     }
 
-    public async findOne(options: GetAllOptions<Partial<T['dataValues']>>): Promise<T | undefined> {
+    public async findOne(options: GetAllOptions<Partial<T['_dataValues']>>): Promise<T | undefined> {
         const result = await this.findAll(options);
         if (result.length === 0) {
             return undefined
@@ -137,7 +137,7 @@ export class Model<T extends Entity<any, any>> {
         return this.parseResponse(this.fields, queryResponse)[0];
     }
 
-    public async findAll(options?: GetAllOptions<Partial<T['dataValues']>>): Promise<T[]> {
+    public async findAll(options?: GetAllOptions<Partial<T['_dataValues']>>): Promise<T[]> {
         try {
             if (!options) {
                 const queryResult = await pgConnection.query(`select * from public.${this.name}`);
