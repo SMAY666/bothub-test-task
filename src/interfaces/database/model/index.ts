@@ -82,7 +82,7 @@ export class Model<T extends Entity<any, any>> {
             });
 
             await pgConnection.query(`
-                create table ${this.name} (
+                create table if not exists ${this.name} (
                     ${defineFieldsText}
                 )
             `);
