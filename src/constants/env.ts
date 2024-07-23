@@ -11,4 +11,5 @@ export const ENV = cleanEnv(
     DB_NAME: str(),
     DB_USER: str(),
     DB_PASSWORD: str(),
+    SALT: str(),
 });

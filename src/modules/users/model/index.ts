@@ -18,7 +18,7 @@ export const UserModel = new Model<UserInstance>({
         type: PostgresTypes.STRING,
         allowNull: false,
     },
-    password: {
+    passwordHash: {
         type: PostgresTypes.STRING,
         allowNull: false,
     },

@@ -1,6 +1,7 @@
 import {UserCreationAttributes, UserInstance} from '../model/types';
 import {UserModel} from '../model';
 import {UserRoles} from '../constants';
+import {createHash} from '../../authorization/password';
 
 
 class UsersRepository {
@@ -13,8 +14,24 @@ class UsersRepository {
         return user;
     }
 
-    public async create(data: UserCreationAttributes): Promise<UserInstance> {
-        return await UserModel.create(data);
+    public async register(data: UserCreationAttributes, password: string,  confirmPassword: string): Promise<UserInstance> {
+        const userExist = await UserModel.findOne({
+            where: [
+                {email: data.email},
+                {username: data.username}
+            ]
+        });
+        if (userExist) {
+            throw new Error('User already exist');
+        }
+        if (password !== confirmPassword) {
+            throw new Error('Password is not confirmed');
+        }
+
+        return await UserModel.create({
+            ...data,
+            passwordHash: createHash(password),
+        });
     }
 
     public async changeRole(id: number, role: UserRoles): Promise<UserInstance> {
