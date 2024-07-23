@@ -7,6 +7,8 @@ import {
 } from 'postgresql-client';
 
 import {ENV} from '../constants/env';
+import {Model} from '../interfaces/database/model';
+import {Entity} from '../interfaces/database/entity';
 
 
 class PostgresConnection {
@@ -14,18 +16,20 @@ class PostgresConnection {
         this.type = type;
         this.config = config;
 
-        this.connection = this.type === 'Connection' ? new Connection(config) : new Pool(config)
+        this.connection = this.type === 'Connection' ? new Connection(config) : new Pool(config);
+        this.models = [];
     }
 
 
-// ----- [ PRIVATE MEMBERS ] -------------------------------------------------------------------------------------------
+    // ----- [ PRIVATE MEMBERS ] ---------------------------------------------------------------------------------------
 
     private readonly type: 'Connection' | 'Pool';
     private readonly config: ConnectionConfiguration | PoolConfiguration | string;
     private readonly connection: Connection | Pool;
+    private readonly models: Model<Entity<any, any>>[];
 
 
-// ----- [ PUBLIC METHODS ] --------------------------------------------------------------------------------------------
+    // ----- [ PUBLIC METHODS ] ----------------------------------------------------------------------------------------
 
     public async connect(): Promise<void> {
         try {
@@ -33,6 +37,8 @@ class PostgresConnection {
                 return this.connection.connect();
             }
             console.log('[postgres]: Connection established');
+
+            this.models.forEach((model) => model.createTable());
         } catch (err) {
             throw new Error(JSON.stringify(err));
         }
@@ -40,6 +46,13 @@ class PostgresConnection {
 
     public async query(sql: string, options?: QueryOptions) {
         return await this.connection.query(sql, options)
+    }
+
+    public define<T extends Entity<any, any>>(fields: T['attributes'], name: string): Model<T> {
+        const newModel = new Model<T>(fields, name);
+        this.models.push(newModel);
+
+        return newModel;
     }
 }
 

@@ -1,9 +1,9 @@
-import {Model} from '../../../interfaces/database/model';
 import {PostgresTypes} from '../../../interfaces/database/model/types';
 import {UserInstance} from './types';
+import {pgConnection} from '../../../connections/postgresConnection';
 
 
-export const UserModel = new Model<UserInstance>({
+export const UserModel = pgConnection.define<UserInstance>({
     id: {
         primaryKey: true,
         type: PostgresTypes.INT8,
