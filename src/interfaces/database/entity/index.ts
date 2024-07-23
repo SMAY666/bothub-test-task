@@ -5,16 +5,14 @@ export class Entity<CreationAttributes extends object, Attributes extends object
         attributes: Attributes,
         tableName: string
     ) {
-        this.attributes = attributes;
-        this.whereAttributes = attributes;
+        this.dataValues = attributes;
         this.tableName = tableName;
 
 
-        Object.keys(this.attributes).forEach((key) => (this as any)[key] = this.attributes[key]);
+        Object.keys(this.dataValues).forEach((key) => (this as any)[key] = this.dataValues[key]);
     }
 
-    public attributes: Attributes;
-    public whereAttributes: Partial<Attributes>
+    public dataValues: Attributes;
     public tableName: string;
 
     [key: string]: any;

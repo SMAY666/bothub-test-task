@@ -22,7 +22,7 @@ export type ModelInstance<T extends {
 
 
 export type WhereOption<T> = {
-    [K in keyof T]: T[K] | null
+    [K in keyof T]: T[K] | [string, T[K]] | null
 }
 
 export type GetAllOptions<T> = {

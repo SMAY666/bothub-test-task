@@ -6,7 +6,7 @@ import {Entity} from '../entity';
 
 
 export class Model<T extends Entity<any, any>> {
-    constructor(fields: FieldsConfig<T['attributes']>, name: string) {
+    constructor(fields: FieldsConfig<T['dataValues']>, name: string) {
         this.fields = fields;
         this.name = name;
     }
@@ -15,7 +15,7 @@ export class Model<T extends Entity<any, any>> {
     // ----- [ PRIVATE MEMBERS ] ---------------------------------------------------------------------------------------
 
     private readonly name: string;
-    private readonly fields: FieldsConfig<T['attributes']>;
+    private readonly fields: FieldsConfig<T['dataValues']>;
 
     // ----- [ PRIVATE METHODS ] ---------------------------------------------------------------------------------------
 
@@ -23,20 +23,39 @@ export class Model<T extends Entity<any, any>> {
         return '*';
     }
 
-    private createInstance(attributes: T['attributes']): T {
-        const instance = new Entity<T["creationAttributes"], T["attributes"]>(attributes, this.name);
-        instance.attributes = attributes;
+    private concatQueryConditions(where: WhereOption<Partial<T['attributes']>>) {
+        const whereElements: string[] = [];
+        Object.keys(where).forEach((key) => {
+            let finalString = sqlKeywords.includes(key) ? `"${key}"` : key;
+            if (where[key] === null) {
+                finalString += ' is null';
+            } else if (typeof where[key] === 'string') {
+                finalString += `='${where[key]}'`;
+            } else if (Array.isArray(where[key])) {
+                // @ts-ignore
+                finalString += ' ' + where[key].join(' ');
+            } else {
+                finalString += `=${where[key]}`;
+            }
+            whereElements.push(finalString);
+        });
+        return whereElements;
+    }
+
+    private createInstance(attributes: T['dataValues']): T {
+        const instance = new Entity<T["creationAttributes"], T["dataValues"]>(attributes, this.name);
+        instance.dataValues = attributes;
 
         return instance as T;
     }
 
-    private parseResponse(fields: T['attributes'], response: QueryResult): T[] {
+    private parseResponse(fields: T['dataValues'], response: QueryResult): T[] {
         const result: T[] = [];
         if (!response || !response.rows) {
             throw new Error('Response parsing failed');
         }
         for (const row of response.rows) {
-            const attributes: T['attributes'] = {};
+            const attributes: T['dataValues'] = {};
 
             Object.keys(fields).forEach((key, index) => {
                 attributes[key] = row[index];
@@ -97,8 +116,8 @@ export class Model<T extends Entity<any, any>> {
         }
     }
 
-    public async get(options: GetAllOptions<T['whereAttributes']>): Promise<T | undefined> {
-        const result = await this.getAll(options);
+    public async findOne(options: GetAllOptions<Partial<T['dataValues']>>): Promise<T | undefined> {
+        const result = await this.findAll(options);
         if (result.length === 0) {
             return undefined
         }
@@ -106,7 +125,7 @@ export class Model<T extends Entity<any, any>> {
         return result[0];
     }
 
-    public async getById(id: number): Promise<T | undefined> {
+    public async findById(id: number): Promise<T | undefined> {
         const queryString = `select * from public.${this.name} where id=${id}`;
 
         const queryResponse = await pgConnection.query(queryString);
@@ -118,7 +137,7 @@ export class Model<T extends Entity<any, any>> {
         return this.parseResponse(this.fields, queryResponse)[0];
     }
 
-    public async getAll(options?: GetAllOptions<T['whereAttributes']>): Promise<T[]> {
+    public async findAll(options?: GetAllOptions<Partial<T['dataValues']>>): Promise<T[]> {
         try {
             if (!options) {
                 const queryResult = await pgConnection.query(`select * from public.${this.name}`);
@@ -129,7 +148,6 @@ export class Model<T extends Entity<any, any>> {
                 return this.parseResponse(this.fields, queryResult);
             }
             const where = options.where;
-            const whereElements: string[] = [];
 
             const attributes: string[] | undefined = options.attributes;
             const formatAttributes = attributes && attributes.length > 0 ? attributes.map((attribute) => {
@@ -139,36 +157,13 @@ export class Model<T extends Entity<any, any>> {
             let queryString = `select ${formatAttributes ? formatAttributes.join(', ') : '*'} from public.${this.name}`;
 
             if (where && !Array.isArray(where)) {
-                Object.keys(where).forEach((key) => {
-                    let finalString = sqlKeywords.includes(key) ? `"${key}"` : key;
-                    if (where[key] === null) {
-                        finalString += ' is null';
-                    } else if (typeof where[key] === 'string') {
-                        finalString += `='${where[key]}'`;
-                    } else {
-                        finalString += `=${where[key]}`;
-                    }
-                    whereElements.push(finalString);
-                });
-                queryString += ` where ${whereElements.join(' and ')}`;
+                queryString += ` where ${this.concatQueryConditions(where).join(' and ')}`;
             } else if (where && Array.isArray(where)) {
                 const whereElements = [];
                 // @ts-ignore
                 where.forEach((condition) => {
                     // @ts-ignore
-                    whereElements.push(Object.keys(condition)
-                        .map((key) => {
-                            let finalString = sqlKeywords.includes(key) ? `"${key}"` : key;
-                            if (condition[key] === null) {
-                                finalString += ' is null';
-                            } else if (typeof condition[key] === 'string') {
-                                finalString += `='${condition[key]}'`;
-                            } else {
-                                finalString += `=${condition[key]}`;
-                            }
-                            return finalString;
-                        })
-                        .join(' and '));
+                    whereElements.push(`(${this.concatQueryConditions(condition).join(' and ')})`);
                 });
                 queryString += ` where ${whereElements.join(' or ')}`;
             }
