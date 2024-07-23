@@ -28,9 +28,14 @@ class PostgresConnection {
 // ----- [ PUBLIC METHODS ] --------------------------------------------------------------------------------------------
 
     public async connect(): Promise<void> {
-       if (this.connection instanceof Connection) {
-           return this.connection.connect();
-       }
+        try {
+            if (this.connection instanceof Connection) {
+                return this.connection.connect();
+            }
+            console.log('[postgres]: Connection established');
+        } catch (err) {
+            throw new Error(JSON.stringify(err));
+        }
     }
 
     public async query(sql: string, options?: QueryOptions) {

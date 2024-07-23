@@ -23,6 +23,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "envalid": "^8.0.0",
+    "fastify": "^4.28.1",
     "postgresql-client": "^2.12.0"
   }
 }
