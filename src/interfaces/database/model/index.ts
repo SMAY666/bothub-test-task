@@ -116,22 +116,22 @@ export class Model<T extends Entity<any, any>> {
         }
     }
 
-    public async findOne(options: GetAllOptions<Partial<T['_dataValues']>>): Promise<T | undefined> {
+    public async findOne(options: GetAllOptions<Partial<T['_dataValues']>>): Promise<T | null> {
         const result = await this.findAll(options);
         if (result.length === 0) {
-            return undefined
+            return null
         }
 
         return result[0];
     }
 
-    public async findById(id: number): Promise<T | undefined> {
+    public async findById(id: number): Promise<T | null> {
         const queryString = `select * from public.${this.name} where id=${id}`;
 
         const queryResponse = await pgConnection.query(queryString);
 
         if (!queryResponse.rows || queryResponse.rows.length === 0) {
-            return undefined;
+            return null;
         }
 
         return this.parseResponse(this.fields, queryResponse)[0];
