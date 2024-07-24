@@ -28,3 +28,10 @@ export type UpdateRequest = {
     }
     Reply: BookAttributes
 }
+
+export type DeleteRequest = {
+    Params: {
+        id: number
+    }
+    Reply: void
+}

@@ -3,9 +3,10 @@ import {bookRepository} from '../../modules/books/repository';
 import {
     CreateRequest,
     GetAllRequest,
-    GetByIdRequest, UpdateRequest
+    GetByIdRequest,
+    UpdateRequest,
+    DeleteRequest,
 } from './types';
-import {BookCreationAttributes} from '../../modules/books/model/type';
 
 
 class Controller {
@@ -41,8 +42,15 @@ class Controller {
         });
 
         reply
-            .status(201)
+            .status(200)
             .send(updatedBook._dataValues);
+    }
+
+    public delete: RouteHandler<DeleteRequest> = async (req, reply) => {
+        await bookRepository.delete(req.params.id);
+        reply
+            .status(200)
+            .send();
     }
 }
 

@@ -1,5 +1,11 @@
 import {FastifyPluginCallback} from 'fastify';
-import {CreateRequest, GetAllRequest, GetByIdRequest, UpdateRequest} from './types';
+import {
+    CreateRequest,
+    GetAllRequest,
+    GetByIdRequest,
+    UpdateRequest,
+    DeleteRequest,
+} from './types';
 import {controller} from './controller';
 
 
@@ -23,6 +29,11 @@ export const bookRoutes: FastifyPluginCallback = (instance, opts, done) => {
         '/:id',
         {},
         controller.update,
+    )
+    instance.delete<DeleteRequest>(
+        '/:id',
+        {},
+        controller.delete,
     )
     done();
 }
