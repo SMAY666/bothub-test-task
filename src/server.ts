@@ -4,14 +4,19 @@ import {usersRoutes} from './routes/usersRoutes';
 import {bookRoutes} from './routes/bookRoutes';
 import {createHash} from './modules/authorization/password';
 import {UserModel} from './modules/users/model';
+import {jwtOptions} from './constants/jwt-options';
 
 
 export const server = Fastify({
     logger: true
 });
 
+
 void server.register(usersRoutes, {prefix: '/users'});
 void server.register(bookRoutes, {prefix: '/books'});
+// @ts-ignore
+void server.register(import('@fastify/jwt'), jwtOptions);
+
 
 export async function checkMainAdmin() {
     try {

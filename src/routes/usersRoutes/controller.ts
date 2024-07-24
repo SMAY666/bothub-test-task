@@ -1,6 +1,7 @@
 import {RouteHandler} from 'fastify';
-import {GetRequest, RegisterRequest} from './types';
+import {GetRequest, LoginRequest, RegisterRequest} from './types';
 import {usersRepository} from '../../modules/users/repository';
+import {authorizationRepository} from '../../modules/authorization';
 
 
 class Controller {
@@ -18,6 +19,14 @@ class Controller {
         reply
             .status(201)
             .send(newUser._dataValues);
+    }
+
+    public login: RouteHandler<LoginRequest> = async (req, reply) => {
+        const result = await authorizationRepository.login(req.body.username, req.body.password);
+
+        reply
+            .status(200)
+            .send(result);
     }
 }
 

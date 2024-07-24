@@ -14,4 +14,5 @@ export const ENV = cleanEnv(
     SALT: str(),
     MAIN_ADMIN_EMAIL: str(),
     MAIN_ADMIN_PASSWORD: str(),
+    JWT_KEY: str(),
 });

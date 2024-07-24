@@ -1,6 +1,6 @@
 import {FastifyPluginCallback} from 'fastify';
 import {controller} from './controller';
-import {GetRequest, RegisterRequest} from './types';
+import {GetRequest, LoginRequest, RegisterRequest} from './types';
 
 
 export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
@@ -14,6 +14,12 @@ export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
         '/register',
         {},
         controller.register,
+    )
+
+    instance.post<LoginRequest>(
+        '/login',
+        {},
+        controller.login,
     )
     done();
 };
