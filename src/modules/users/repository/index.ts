@@ -2,13 +2,27 @@ import {UserCreationAttributes, UserInstance} from '../model/types';
 import {UserModel} from '../model';
 import {UserRoles} from '../constants';
 import {createHash} from '../../authorization/password';
+import {GetOptions} from './types';
 
 
 class UsersRepository {
-    public async get(id: number): Promise<UserInstance> {
+    public async getById(id: number): Promise<UserInstance> {
         const user = await UserModel.findById(id);
         if (!user) {
-            throw Error('User not found');
+            throw new Error('User not found');
+        }
+
+        return user;
+    }
+
+    public async get(options?: GetOptions): Promise<UserInstance> {
+        const user = await UserModel.findOne({
+            where: {
+                 ...(options ? options : {}),
+            }
+        });
+        if (!user) {
+            throw new Error('User not found');
         }
 
         return user;
@@ -35,7 +49,7 @@ class UsersRepository {
     }
 
     public async changeRole(id: number, role: UserRoles): Promise<UserInstance> {
-        const user = await this.get(id);
+        const user = await this.getById(id);
         await user.update({role});
 
         return user;

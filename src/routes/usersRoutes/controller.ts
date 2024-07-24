@@ -5,7 +5,7 @@ import {usersRepository} from '../../modules/users/repository';
 
 class Controller {
     public get: RouteHandler<GetRequest> = async (req, reply) => {
-        const user = await usersRepository.get(req.params.id);
+        const user = await usersRepository.getById(req.params.id);
 
         reply
             .status(200)
