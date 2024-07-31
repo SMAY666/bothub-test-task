@@ -10,19 +10,23 @@ export class Entity<CreationAttributes extends object, Attributes extends object
         this._dataValues = attributes;
         this.tableName = tableName;
 
-
-        Object.keys(this._dataValues).forEach((key) => (this as any)[key] = this._dataValues[key]);
+        for (const key in attributes) {
+            Object.defineProperty(this, key, {
+                get: () => this._dataValues[key],
+                set: (value) => this._dataValues[key] = value,
+                enumerable: true,
+                configurable: true,
+            })
+        }
     }
 
     public _dataValues: Attributes;
     private readonly tableName: string;
 
-    [key: string]: any;
-
 
     public async destroy(): Promise<void> {
         try {
-            const queryString = `delete from public.${this.tableName} where id=${this.id}`;
+            const queryString = `delete from public.${this.tableName} where id=${this._dataValues.id}`;
             await pgConnection.query(queryString);
         } catch (err) {
             throw new Error(JSON.stringify(err));
@@ -48,7 +52,7 @@ export class Entity<CreationAttributes extends object, Attributes extends object
                 return `${field}=${value}`;
             });
 
-            let queryString = `update ${this.tableName} set ${updatingFields.join(', ')} where id=${this.id}`;
+            let queryString = `update ${this.tableName} set ${updatingFields.join(', ')} where id=${this._dataValues.id}`;
             const queryResult = await pgConnection.query(queryString);
 
             if (queryResult) {
