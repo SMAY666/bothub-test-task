@@ -9,6 +9,7 @@ import {
 import {ENV} from '../constants/env';
 import {Model} from '../interfaces/database/model';
 import {Entity} from '../interfaces/database/entity';
+import {FieldsConfig} from '../interfaces/database/model/types';
 
 
 class PostgresConnection {
@@ -48,7 +49,7 @@ class PostgresConnection {
         return await this.connection.query(sql, options)
     }
 
-    public define<T extends Entity<any, any>>(fields: T['attributes'], name: string): Model<T> {
+    public define<T extends Entity<any, any>>(fields: FieldsConfig<T['_dataValues']>, name: string): Model<T> {
         const newModel = new Model<T>(fields, name);
         this.models.push(newModel);
 

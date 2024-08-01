@@ -23,7 +23,7 @@ export class Model<T extends Entity<any, any>> {
         return '*';
     }
 
-    private concatQueryConditions(where: WhereOption<Partial<T['attributes']>>) {
+    private concatQueryConditions(where: WhereOption<Partial<T['_dataValues']>>) {
         const whereElements: string[] = [];
         Object.keys(where).forEach((key) => {
             let finalString = sqlKeywords.includes(key) ? `"${key}"` : key;
