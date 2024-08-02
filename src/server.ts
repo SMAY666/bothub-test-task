@@ -11,7 +11,34 @@ import {UserRoles} from './modules/users/constants';
 
 
 export const server = Fastify({
-    logger: true
+    logger: true,
+    ajv: {
+        customOptions: {
+            allowUnionTypes: true,
+            removeAdditional: 'all',
+            coerceTypes: 'array',
+            allErrors: true,
+            keywords: [
+                {
+                    type: ['string', 'integer'],
+                    keyword: 'isDate',
+                    modifying: true,
+                    schema: false,
+                    error: {
+                        message: 'Должно быть датой',
+                    },
+                    validate(value: string | number, {
+                        parentData,
+                        parentDataProperty,
+                    }, dataCxt): boolean {
+                        const convertedValue = new Date((typeof value === 'string') && !isNaN(+value) ? +value : value);
+                        parentData[parentDataProperty] = convertedValue;
+                        return !isNaN(convertedValue.getTime());
+                    },
+                },
+            ],
+        },
+    }
 });
 
 
@@ -27,6 +54,17 @@ server.decorateRequest('role', null);
 
 server.decorate('verifyJwt', verifyJwt);
 server.decorate('verifyAdmin', verifyAdmin);
+
+server.addSchema({
+    $id: 'id',
+    type: 'integer',
+    minimum: 1,
+});
+server.addSchema({
+    $id: 'date',
+    type: ['integer', 'string'],
+    isDate: true,
+});
 
 
 export async function checkMainAdmin() {
