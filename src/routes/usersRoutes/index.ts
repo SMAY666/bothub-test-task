@@ -23,7 +23,7 @@ export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
     )
 
     instance.put<UpdateRoleRequest>(
-        ':id/role',
+        '/:id/role',
         {onRequest: [instance.verifyJwt, instance.verifyAdmin]},
         controller.changeRole,
     )
