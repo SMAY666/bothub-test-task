@@ -23,13 +23,15 @@ export const bookRoutes: FastifyPluginCallback = (instance, opts, done) => {
     instance.post<CreateRequest>(
         '/',
         {
-            onRequest: [instance.verifyJwt, instance.verifyAdmin]
+            onRequest: [instance.verifyJwt, instance.verifyAdmin],
         },
         controller.create,
     )
     instance.put<UpdateRequest>(
         '/:id',
-        {},
+        {
+            onRequest: [instance.verifyJwt, instance.verifyAdmin],
+        },
         controller.update,
     )
     instance.delete<DeleteRequest>(
