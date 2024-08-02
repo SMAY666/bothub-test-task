@@ -15,4 +15,9 @@ export const ENV = cleanEnv(
     MAIN_ADMIN_EMAIL: str(),
     MAIN_ADMIN_PASSWORD: str(),
     JWT_KEY: str(),
+    SMTP_HOST: str(),
+    SMTP_PORT: num(),
+
+    EMAIL_TRANSPORT_ADDRESS: str(),
+    EMAIL_TRANSPORT_PASSWORD: str(),
 });

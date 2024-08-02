@@ -3,9 +3,13 @@ import {UserModel} from '../model';
 import {UserRoles} from '../constants';
 import {createHash} from '../../authorization/password';
 import {GetOptions} from './types';
+import {emailService} from '../../services/emailService';
 
 
 class UsersRepository {
+
+    // ----- [ PUBLIC METHODS ] ----------------------------------------------------------------------------------------
+
     public async getById(id: number): Promise<UserInstance> {
         const user = await UserModel.findById(id);
         if (!user) {
@@ -29,6 +33,11 @@ class UsersRepository {
     }
 
     public async register(data: UserCreationAttributes, password: string,  confirmPassword: string): Promise<UserInstance> {
+        const isEmailConfirmed = await emailService.checkEmail(data.email);
+        if (!isEmailConfirmed) {
+            throw new Error(`Email is not confirmed: ${data.email}`);
+        }
+
         const userExist = await UserModel.findOne({
             where: [
                 {email: data.email},
