@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  backend:
+    container_name: bothub_tt_backend
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    network_mode: host
+    depends_on:
+      - redis
+      - postgres
+    restart: always
+
+  redis:
+    image: redis:7.2.4
+    container_name: bothub_tt_redis
+    env_file:
+      - .env
+    command: redis-server
+    ports:
+      - "${REDIS_PORT}:6379"
+    restart: always
+
+  postgres:
+    image: postgres:16.2
+    container_name: bothub_tt_postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USERNAME: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    restart: always
