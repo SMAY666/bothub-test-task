@@ -38,7 +38,7 @@ class EmailService {
                 to: email,
                 subject: 'Код для регистрации bothub-test-task',
                 html: `
-                    <div>Ваш код для регистрации ${code}<div>
+                    <div>Ваш код для регистрации: ${code}<div>
                 `
 
             })
