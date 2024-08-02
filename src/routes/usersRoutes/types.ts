@@ -1,13 +1,7 @@
 import {UserAttributes, UserCreationAttributes} from '../../modules/users/model/types';
 import {SuccessAuthorized} from '../../modules/authorization/types';
+import {UserRoles} from '../../modules/users/constants';
 
-
-export type GetRequest = {
-    Params: {
-        id: number
-    }
-    Reply: UserAttributes
-}
 
 export type RegisterRequest = {
     Body: {
@@ -24,4 +18,25 @@ export type LoginRequest = {
         password: string
     }
     Reply: SuccessAuthorized
+}
+
+export type GetRequest = {
+    Params: {
+        id: number
+    }
+    Reply: UserAttributes
+}
+
+export type UpdateRoleRequest = {
+    Params: {
+        id: number
+    }
+    Body: {
+        role: UserRoles
+    }
+    Reply: UserAttributes
+}
+
+export type GetMeRequest = {
+    Reply: UserAttributes
 }

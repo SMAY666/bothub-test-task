@@ -1,15 +1,9 @@
 import {FastifyPluginCallback} from 'fastify';
 import {controller} from './controller';
-import {GetRequest, LoginRequest, RegisterRequest} from './types';
+import {GetMeRequest, GetRequest, LoginRequest, RegisterRequest, UpdateRoleRequest} from './types';
 
 
 export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
-    instance.get<GetRequest>(
-        '/users/:id',
-        {},
-        controller.get,
-    )
-
     instance.post<RegisterRequest>(
         '/register',
         {},
@@ -20,6 +14,18 @@ export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
         '/login',
         {},
         controller.login,
+    )
+
+    instance.get<GetMeRequest>(
+        '/me',
+        {onRequest: instance.verifyJwt},
+        controller.getMe,
+    )
+
+    instance.put<UpdateRoleRequest>(
+        ':id/role',
+        {onRequest: [instance.verifyJwt, instance.verifyAdmin]},
+        controller.changeRole,
     )
     done();
 };

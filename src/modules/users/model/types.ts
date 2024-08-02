@@ -1,4 +1,5 @@
 import {ModelInstance} from '../../../interfaces/database/model/types';
+import {UserRoles} from '../constants';
 
 
 export type UserAttributes = {
@@ -6,9 +7,9 @@ export type UserAttributes = {
     username: string
     passwordHash: string
     email: string
-    role: number
+    role: UserRoles
 }
 
-export type UserCreationAttributes = Omit<UserAttributes, 'id' | 'passwordHash'>;
+export type UserCreationAttributes = Omit<UserAttributes, 'id' | 'passwordHash' | 'role'>;
 
 export type UserInstance = ModelInstance<{creationAttributes: UserCreationAttributes, attributes: UserAttributes}>

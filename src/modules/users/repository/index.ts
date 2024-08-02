@@ -44,6 +44,7 @@ class UsersRepository {
 
         return await UserModel.create({
             ...data,
+            role: UserRoles.GUEST,
             passwordHash: createHash(password),
         });
     }
