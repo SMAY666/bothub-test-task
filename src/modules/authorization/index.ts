@@ -22,8 +22,21 @@ class AuthorizationService {
             throw new Error('Password is incorrect');
         }
 
-        const accessToken = await this.signAccessToken(user._dataValues.id);
+        const accessToken = this.signAccessToken(user._dataValues.id);
         return {accessToken};
+    }
+
+    public getAccessToken(authorizationHeader?: string) {
+        if (!authorizationHeader) {
+            throw new Error('Unauthorized');
+        }
+
+        const authHeaderParts = authorizationHeader.split(' ');
+        if (authHeaderParts.length !== 2 || authHeaderParts[0] !== 'Bearer') {
+            throw new Error('Invalid authorization schema');
+        }
+
+        return authHeaderParts[1];
     }
 }
 
