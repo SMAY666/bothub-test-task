@@ -31,6 +31,7 @@
     "envalid": "^8.0.0",
     "fastify": "4.28.1",
     "nodemailer": "^6.9.14",
-    "postgresql-client": "^2.12.0"
+    "postgresql-client": "^2.12.0",
+    "redis": "^4.7.0"
   }
 }

@@ -1,6 +1,13 @@
 import {FastifyPluginCallback} from 'fastify';
 import {controller} from './controller';
-import {GetMeRequest, GetRequest, LoginRequest, RegisterRequest, UpdateRoleRequest} from './types';
+import {
+    GetMeRequest,
+    GetRequest,
+    LoginRequest,
+    RegisterRequest,
+    SendRegisterCodeRequest,
+    UpdateRoleRequest
+} from './types';
 
 const SCHEMAS = [
     {
@@ -25,6 +32,22 @@ const SCHEMAS = [
 
 export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
     SCHEMAS.forEach((schema) => instance.addSchema(schema));
+    instance.post<SendRegisterCodeRequest>(
+        '/verify-email',
+        {
+            schema: {
+                body: {
+                    type: 'object',
+                    properties: {
+                        email: {
+                            type: 'string'
+                        }
+                    }
+                }
+            }
+        },
+        controller.sendRegisterCode
+    )
     instance.post<RegisterRequest>(
         '/register',
         {
@@ -51,6 +74,10 @@ export const usersRoutes: FastifyPluginCallback = (instance, opts, done) => {
                         },
                         confirmPassword: {
                             type: 'string',
+                        },
+                        code: {
+                            type: 'string',
+                            minLength: 1,
                         }
                     }
                 },

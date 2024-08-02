@@ -20,4 +20,11 @@ export const ENV = cleanEnv(
 
     EMAIL_TRANSPORT_ADDRESS: str(),
     EMAIL_TRANSPORT_PASSWORD: str(),
+
+    REDIS_HOST: str(),
+    REDIS_PORT: num(),
+
+    /*REDIS_USER: str(),
+    REDIS_PASS: str(),*/
+    EMAIL_CODE_TIME: num(),
 });

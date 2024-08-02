@@ -3,11 +3,18 @@ import {SuccessAuthorized} from '../../modules/authorization/types';
 import {UserRoles} from '../../modules/users/constants';
 
 
+export type SendRegisterCodeRequest = {
+    Body: {
+        email: string
+    }
+    Reply: void
+}
 export type RegisterRequest = {
     Body: {
         data: UserCreationAttributes,
         password: string
         confirmPassword: string
+        code: string
     }
     Reply: UserAttributes
 }

@@ -1,12 +1,26 @@
 import {RouteHandler} from 'fastify';
-import {GetMeRequest, GetRequest, LoginRequest, RegisterRequest, UpdateRoleRequest} from './types';
+import {
+    GetMeRequest,
+    GetRequest,
+    LoginRequest,
+    RegisterRequest,
+    SendRegisterCodeRequest,
+    UpdateRoleRequest
+} from './types';
 import {usersRepository} from '../../modules/users/repository';
 import {authorizationRepository} from '../../modules/authorization';
+import {emailService} from '../../services/emailService';
 
 
 class Controller {
+    public sendRegisterCode: RouteHandler<SendRegisterCodeRequest> = async (req, reply) => {
+        await emailService.sendRegisterCode(req.body.email);
+        reply
+            .status(200)
+            .send()
+    }
     public register: RouteHandler<RegisterRequest> = async (req, reply) => {
-        const newUser = await usersRepository.register(req.body.data, req.body.password, req.body.confirmPassword);
+        const newUser = await usersRepository.register(req.body.data, req.body.password, req.body.confirmPassword, req.body.code);
 
         reply
             .status(201)

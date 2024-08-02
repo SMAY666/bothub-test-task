@@ -4,6 +4,7 @@ import {UserRoles} from '../constants';
 import {createHash} from '../../authorization/password';
 import {GetOptions} from './types';
 import {emailService} from '../../../services/emailService';
+import {redisConnection} from '../../../connections/redisConnection';
 
 
 class UsersRepository {
@@ -32,12 +33,12 @@ class UsersRepository {
         return user;
     }
 
-    public async register(data: UserCreationAttributes, password: string,  confirmPassword: string): Promise<UserInstance> {
-        const isEmailConfirmed = await emailService.checkEmail(data.email);
-        if (!isEmailConfirmed) {
-            throw new Error(`Email is not confirmed: ${data.email}`);
+    public async register(data: UserCreationAttributes, password: string,  confirmPassword: string, code: string): Promise<UserInstance> {
+        const codeInRedis = await redisConnection.get(`register-code-${data.email}`);
+        console.log(codeInRedis);
+        if (code !== codeInRedis) {
+            throw new Error('Verification code is incorrect');
         }
-
         const userExist = await UserModel.findOne({
             where: [
                 {email: data.email},

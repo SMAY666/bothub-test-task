@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import {ENV} from '../../constants/env';
+import {redisConnection} from '../../connections/redisConnection';
 
 class EmailService {
     constructor() {
@@ -30,14 +31,21 @@ class EmailService {
 
     // ----- [ PUBLIC METHODS ] ----------------------------------------------------------------------------------------
 
-    public async checkEmail(email: string): Promise<boolean> {
+    public async sendRegisterCode(email: string): Promise<boolean> {
+        const code = Math.floor(Math.random() * (9999 - 1000 + 1) + 1000);
         return new Promise<boolean>((resolve, reject) => {
             this.transport.sendMail({
                 to: email,
-                subject: 'Новый пользователь зарегистрирован'
+                subject: 'Код для регистрации bothub-test-task',
+                html: `
+                    <div>Ваш код для регистрации ${code}<div>
+                `
 
             })
-                .then(() => resolve(true))
+                .then(() => {
+                    redisConnection.setEx(`register-code-${email}`, ENV.EMAIL_CODE_TIME, code.toString());
+                    resolve(true);
+                })
                 .catch((err) => {
                     reject(Error(JSON.stringify(err)));
                 });
