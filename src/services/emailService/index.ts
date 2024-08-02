@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import {ENV} from '../../../constants/env';
+import {ENV} from '../../constants/env';
 
 class EmailService {
     constructor() {

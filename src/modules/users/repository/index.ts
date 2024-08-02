@@ -3,7 +3,7 @@ import {UserModel} from '../model';
 import {UserRoles} from '../constants';
 import {createHash} from '../../authorization/password';
 import {GetOptions} from './types';
-import {emailService} from '../../services/emailService';
+import {emailService} from '../../../services/emailService';
 
 
 class UsersRepository {

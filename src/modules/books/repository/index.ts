@@ -2,6 +2,9 @@ import {BookCreationAttributes, BookInstance, BookUpdateAttributes} from '../mod
 import {BookModel} from '../model';
 
 class BookRepository {
+
+    // ----- [ PUBLIC METHODS ] ----------------------------------------------------------------------------------------
+
     public async getAll(): Promise<BookInstance[]> {
         return await BookModel.findAll();
     }
