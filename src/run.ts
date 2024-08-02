@@ -8,6 +8,7 @@ export function run() {
         pgConnection.connect(),
         checkMainAdmin(),
     ])
-        .then(() => startServer())
-        .then(() => console.log('Server is running'));
+        .then(() => startServer()
+            .then(() => console.log('Server is running')))
+        .catch((err) => console.log(err));
 }
