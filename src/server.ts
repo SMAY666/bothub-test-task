@@ -6,6 +6,8 @@ import {createHash} from './modules/authorization/password';
 import {UserModel} from './modules/users/model';
 import {jwtOptions} from './constants/jwt-options';
 import verifyJwt from './middlewares/authJwt';
+import verifyAdmin from './middlewares/verifyAdmin';
+import {UserRoles} from './modules/users/constants';
 
 
 export const server = Fastify({
@@ -24,6 +26,7 @@ server.decorateRequest('userId', null);
 server.decorateRequest('role', null);
 
 server.decorate('verifyJwt', verifyJwt);
+server.decorate('verifyAdmin', verifyAdmin);
 
 
 export async function checkMainAdmin() {
@@ -39,7 +42,7 @@ export async function checkMainAdmin() {
                 username: 'main_admin',
                 email: ENV.MAIN_ADMIN_EMAIL,
                 passwordHash: createHash(ENV.MAIN_ADMIN_PASSWORD),
-                role: 1
+                role: UserRoles.ADMIN,
             });
         }
     } catch (err) {
