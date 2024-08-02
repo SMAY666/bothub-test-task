@@ -22,7 +22,10 @@ export const bookRoutes: FastifyPluginCallback = (instance, opts, done) => {
     )
     instance.post<CreateRequest>(
         '/',
-        {},
+        {
+            // @ts-ignore
+            onRequest: [instance.verifyJwt, ]
+        },
         controller.create,
     )
     instance.put<UpdateRequest>(

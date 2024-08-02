@@ -5,6 +5,7 @@ import {bookRoutes} from './routes/bookRoutes';
 import {createHash} from './modules/authorization/password';
 import {UserModel} from './modules/users/model';
 import {jwtOptions} from './constants/jwt-options';
+import verifyJwt from './middlewares/authJwt';
 
 
 export const server = Fastify({
@@ -21,6 +22,8 @@ void server.register(import('@fastify/auth'));
 server.decorateRequest('isAuth', false);
 server.decorateRequest('userId', null);
 server.decorateRequest('role', null);
+
+server.decorate('verifyJwt', verifyJwt);
 
 
 export async function checkMainAdmin() {

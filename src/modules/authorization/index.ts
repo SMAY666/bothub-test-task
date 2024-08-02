@@ -1,5 +1,5 @@
 import {createHash} from './password';
-import {SuccessAuthorized, TokenData} from './types';
+import {AccessToken, SuccessAuthorized, TokenData} from './types';
 import {usersRepository} from '../users/repository';
 import server from '../../server';
 
@@ -37,6 +37,10 @@ class AuthorizationService {
         }
 
         return authHeaderParts[1];
+    }
+
+    public verifyAccessToken(accessToken: string): AccessToken {
+        return server.jwt.verify<AccessToken>(accessToken);
     }
 }
 
