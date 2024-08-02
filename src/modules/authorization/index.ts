@@ -1,16 +1,15 @@
 import {createHash} from './password';
 import {SuccessAuthorized, TokenData} from './types';
 import {usersRepository} from '../users/repository';
-import {server} from '../../server';
+import server from '../../server';
 
 
 class AuthorizationService {
     // ----- [ PRIVATE METHODS ] ---------------------------------------------------------------------------------------
 
-    private signAccessToken(userId: number): Promise<string> {
+    private signAccessToken(userId: number): string {
         const tokenData: TokenData = {userId};
-        // @ts-ignore
-        return server.jwt.sign(tokenData, {expires: '10d'});
+        return server.jwt.sign(tokenData, {expiresIn: '10d'});
     }
 
 

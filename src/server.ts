@@ -14,8 +14,13 @@ export const server = Fastify({
 
 void server.register(usersRoutes, {prefix: '/users'});
 void server.register(bookRoutes, {prefix: '/books'});
-// @ts-ignore
+
 void server.register(import('@fastify/jwt'), jwtOptions);
+void server.register(import('@fastify/auth'));
+
+server.decorateRequest('isAuth', false);
+server.decorateRequest('userId', null);
+server.decorateRequest('role', null);
 
 
 export async function checkMainAdmin() {
@@ -54,4 +59,6 @@ export async function startServer() {
     })
 }
 
+
+export default server;
 
