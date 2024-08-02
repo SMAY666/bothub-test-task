@@ -133,6 +133,7 @@ export const bookRoutes: FastifyPluginCallback = (instance, opts, done) => {
     instance.delete<DeleteRequest>(
         '/:id',
         {
+            onRequest: [instance.verifyJwt, instance.verifyAdmin],
             schema: {
                 params: {
                     type: 'object',
